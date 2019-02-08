@@ -10,7 +10,6 @@ import java.util.ArrayList;
 public class TransactionTest {
 
     private Account account1;
-    private Account account2;
 
     @Before
     public void setUp() {
@@ -19,34 +18,32 @@ public class TransactionTest {
                 .accountNumber("123ABC456")
                 .transactionHistory(new ArrayList<>())
                 .build();
-        account2 = Account.builder()
-                .balance(Account.getMonetaryAmount(0))
-                .accountNumber("456123ABC")
-                .transactionHistory(new ArrayList<>())
-                .build();
     }
 
     @Test
-    public void should_update_sender_receiver_balance() {
-        account1.send(Account.getMonetaryAmount(100), account2);
+    public void should_update_balance_with_deposit() {
+        account1.deposit(Account.getMonetaryAmount(100));
+        Assertions.assertThat(Account.getMonetaryAmount(100)).isEqualTo(account1.getBalance());
+    }
+
+    @Test
+    public void should_update_balance_with_withdrawl() {
+        account1.withdraw(Account.getMonetaryAmount(100));
         Assertions.assertThat(Account.getMonetaryAmount(-100)).isEqualTo(account1.getBalance());
-        Assertions.assertThat(Account.getMonetaryAmount(100)).isEqualTo(account2.getBalance());
     }
 
     @Test
     public void should_add_transaction_to_transaction_history() {
-        LocalDateTime date1 = account1.send(Account.getMonetaryAmount(120), account2);
-        LocalDateTime date2 = account1.send(Account.getMonetaryAmount(500), account2);
+        LocalDateTime date1 = account1.deposit(Account.getMonetaryAmount(100));
+        LocalDateTime date2 = account1.withdraw(Account.getMonetaryAmount(100));
         Assertions.assertThat(account1.getTransactionHistory().contains(Transaction.builder()
-                .sender("123ABC456")
-                .receiver("456123ABC")
-                .amount(Account.getMonetaryAmount(120))
+                .transactionType(TransactionType.DEPOSIT)
+                .amount(Account.getMonetaryAmount(100))
                 .transactionDateTime(date1)
                 .build())).isTrue();
         Assertions.assertThat(account1.getTransactionHistory().contains(Transaction.builder()
-                .sender("123ABC456")
-                .receiver("456123ABC")
-                .amount(Account.getMonetaryAmount(500))
+                .transactionType(TransactionType.WITHDRAWL)
+                .amount(Account.getMonetaryAmount(100))
                 .transactionDateTime(date2)
                 .build())).isTrue();
     }

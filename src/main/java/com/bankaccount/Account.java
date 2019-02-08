@@ -28,24 +28,26 @@ private MonetaryAmount balance;
         return Monetary.getDefaultAmountFactory().setNumber(amount).setCurrency("EUR").create();
     }
 
-    public LocalDateTime send(MonetaryAmount amount, Account receiverAccount) {
-        balance = balance.subtract(amount);
-        LocalDateTime date = LocalDateTime.now();
-        receiverAccount.receive(amount, this, date);
-        Transaction transaction = new Transaction(this.accountNumber, receiverAccount.accountNumber, amount,
-                date);
-        transactionHistory.add(transaction);
-        return date;
-    }
-
-    public void receive(MonetaryAmount amount, Account senderAccount, LocalDateTime date) {
+    public LocalDateTime deposit(MonetaryAmount amount) {
         balance = balance.add(amount);
+        LocalDateTime date = LocalDateTime.now();
         transactionHistory.add(Transaction.builder()
-                .sender(senderAccount.getAccountNumber())
-                .receiver(this.accountNumber)
+                .transactionType(TransactionType.DEPOSIT)
                 .amount(amount)
                 .transactionDateTime(date)
                 .build());
+        return date;
+    }
+
+    public LocalDateTime withdraw(MonetaryAmount amount) {
+        balance = balance.subtract(amount);
+        LocalDateTime date = LocalDateTime.now();
+        transactionHistory.add(Transaction.builder()
+                .transactionType(TransactionType.WITHDRAWL)
+                .amount(amount)
+                .transactionDateTime(date)
+                .build());
+        return date;
     }
 
 }
